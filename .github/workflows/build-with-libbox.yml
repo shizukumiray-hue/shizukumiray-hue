@@ -13,10 +13,12 @@ jobs:
     - name: Checkout Android app
       uses: actions/checkout@v4
       
-    - name: Checkout sing-box to subdirectory
+    - name: Checkout custom sing-box with SSH WS tunneling
       run: |
         cd ..
-        git clone --depth 1 --branch v1.14.0-rc.1 https://github.com/SagerNet/sing-box.git
+        git clone https://github.com/shizukumiray-hue/sing-box-custom.git sing-box
+        cd sing-box
+        git checkout custom-ssh-payload
       
     - name: Set up Go
       uses: actions/setup-go@v5
