@@ -1,0 +1,60 @@
+name: Build APK v1.13.19 with Custom Libbox
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build-apk:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout sing-box-for-android v1.13.19
+        uses: actions/checkout@v4
+        with:
+          repository: SagerNet/sing-box-for-android
+          ref: aed2b6e
+          submodules: recursive
+      
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+      
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: wrapper
+      
+      - name: Download custom libbox.aar from Release
+        run: |
+          echo "Downloading custom libbox.aar v1.13.19 from GitHub Release..."
+          mkdir -p app/libs
+          curl -L -o app/libs/libbox.aar \
+            https://github.com/shizukumiray-hue/shizukumiray-hue/releases/download/libbox-v1.13.19-cc79da2a/libbox.aar
+          
+          cp app/libs/libbox.aar app/libs/libbox-legacy.aar
+          
+          ls -lh app/libs/
+          echo "Custom libbox.aar v1.13.19 with SSH WS ready"
+      
+      - name: Build Debug APK
+        run: |
+          chmod +x gradlew
+          ./gradlew assembleOtherDebug --stacktrace 2>&1 | tee build.log
+      
+      - name: Upload APKs
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: apk-v1.13.19-custom
+          path: |
+            app/build/outputs/apk/**/*.apk
+          retention-days: 30
+      
+      - name: Upload build log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-log
+          path: build.log
