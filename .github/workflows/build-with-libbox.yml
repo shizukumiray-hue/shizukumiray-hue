@@ -12,14 +12,13 @@ jobs:
     steps:
     - name: Checkout Android app
       uses: actions/checkout@v4
-      path: sing-box-for-android
       
     - name: Checkout sing-box
       uses: actions/checkout@v4
       with:
         repository: SagerNet/sing-box
         ref: v1.14.0-rc.1
-        path: sing-box
+        path: ../sing-box
       
     - name: Set up Go
       uses: actions/setup-go@v5
@@ -41,7 +40,7 @@ jobs:
         echo "ANDROID_NDK_HOME=$ANDROID_SDK_ROOT/ndk/26.1.10909125" >> $GITHUB_ENV
         
     - name: Build libbox.aar
-      working-directory: sing-box
+      working-directory: ../sing-box
       run: |
         export ANDROID_HOME=$ANDROID_SDK_ROOT
         export ANDROID_NDK_HOME=$ANDROID_SDK_ROOT/ndk/26.1.10909125
@@ -49,9 +48,9 @@ jobs:
         
     - name: Copy libbox.aar to Android project
       run: |
-        mkdir -p sing-box-for-android/app/libs
-        find sing-box -name "libbox*.aar" -exec cp {} sing-box-for-android/app/libs/ \;
-        ls -lh sing-box-for-android/app/libs/
+        mkdir -p app/libs
+        find ../sing-box -name "libbox*.aar" -exec cp {} app/libs/ \;
+        ls -lh app/libs/
         
     - name: Cache Gradle packages
       uses: actions/cache@v4
@@ -64,25 +63,21 @@ jobs:
           ${{ runner.os }}-gradle-
           
     - name: Grant execute permission for gradlew
-      working-directory: sing-box-for-android
       run: chmod +x gradlew
       
     - name: Build APK (Other Debug)
-      working-directory: sing-box-for-android
       run: ./gradlew assembleOtherDebug --stacktrace
       
     - name: Build APK (Other Release)
-      working-directory: sing-box-for-android
       run: ./gradlew assembleOtherRelease --stacktrace
       continue-on-error: true
       
     - name: List built APKs
-      working-directory: sing-box-for-android
       run: find app/build/outputs/apk -name "*.apk" -type f
       
     - name: Upload APK artifacts
       uses: actions/upload-artifact@v4
       with:
         name: sing-box-apks
-        path: sing-box-for-android/app/build/outputs/apk/**/*.apk
+        path: app/build/outputs/apk/**/*.apk
         retention-days: 30
