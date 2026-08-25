@@ -13,12 +13,10 @@ jobs:
     - name: Checkout Android app
       uses: actions/checkout@v4
       
-    - name: Checkout sing-box
-      uses: actions/checkout@v4
-      with:
-        repository: SagerNet/sing-box
-        ref: v1.14.0-rc.1
-        path: ../sing-box
+    - name: Checkout sing-box to subdirectory
+      run: |
+        cd ..
+        git clone --depth 1 --branch v1.14.0-rc.1 https://github.com/SagerNet/sing-box.git
       
     - name: Set up Go
       uses: actions/setup-go@v5
