@@ -24,23 +24,16 @@ jobs:
         with:
           gradle-version: wrapper
       
-      - name: Download libbox.aar artifact
-        env:
-          GH_TOKEN: ${{ secrets.GH_TOKEN }}
+      - name: Download libbox.aar from Release
         run: |
-          echo "Downloading libbox.aar from artifact 9569940433..."
-          curl -L -H "Authorization: token $GH_TOKEN" \
-            -o libbox.aar.zip \
-            https://api.github.com/repos/shizukumiray-hue/shizukumiray-hue/actions/artifacts/9569940433/zip
+          echo "Downloading custom libbox.aar from GitHub Release..."
+          curl -L -o app/libs/libbox.aar \
+            https://github.com/shizukumiray-hue/shizukumiray-hue/releases/download/libbox-v1.13.19-cc79da2a/libbox.aar
           
-          unzip libbox.aar.zip
-          
-          # Copy to both locations
-          mkdir -p app/libs
-          cp libbox.aar app/libs/libbox.aar
-          cp libbox.aar app/libs/libbox-legacy.aar
+          cp app/libs/libbox.aar app/libs/libbox-legacy.aar
           
           ls -lh app/libs/
+          echo "libbox.aar downloaded successfully"
       
       - name: Build Debug APK
         run: |
