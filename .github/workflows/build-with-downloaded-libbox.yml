@@ -1,0 +1,64 @@
+name: Build APK with Downloaded Libbox
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build-apk:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+      
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+      
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: wrapper
+      
+      - name: Download libbox.aar artifact
+        env:
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
+        run: |
+          echo "Downloading libbox.aar from artifact 9569940433..."
+          curl -L -H "Authorization: token $GH_TOKEN" \
+            -o libbox.aar.zip \
+            https://api.github.com/repos/shizukumiray-hue/shizukumiray-hue/actions/artifacts/9569940433/zip
+          
+          unzip libbox.aar.zip
+          
+          # Copy to both locations
+          mkdir -p app/libs
+          cp libbox.aar app/libs/libbox.aar
+          cp libbox.aar app/libs/libbox-legacy.aar
+          
+          ls -lh app/libs/
+      
+      - name: Build Debug APK
+        run: |
+          chmod +x gradlew
+          ./gradlew assembleOtherDebug --stacktrace --info 2>&1 | tee build.log
+      
+      - name: Upload APK if exists
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: apk-output
+          path: |
+            app/build/outputs/apk/**/*.apk
+          if-no-files-found: ignore
+      
+      - name: Upload build log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-log
+          path: build.log
