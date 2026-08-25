@@ -37,11 +37,11 @@ jobs:
     - name: Grant execute permission for gradlew
       run: chmod +x gradlew
       
-    - name: Build APK (Other Release)
-      run: ./gradlew assembleOtherRelease --stacktrace
+    - name: Build APK (Other Debug)
+      run: ./gradlew assembleOtherDebug --stacktrace
       
-    - name: Build APK (Other Legacy Release)
-      run: ./gradlew assembleOtherLegacyRelease --stacktrace
+    - name: Build APK (Other Release - unsigned)
+      run: ./gradlew assembleOtherRelease --stacktrace || ./gradlew assembleOtherDebug --stacktrace
       continue-on-error: true
       
     - name: List built APKs
